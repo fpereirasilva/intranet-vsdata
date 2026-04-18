@@ -419,6 +419,105 @@
             font-size: 1.2rem;
         }
 
+        /* Modal tutorial iOS */
+        .ios-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+        .ios-modal.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .ios-modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 100%;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .ios-modal-content h2 {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ios-modal-content .subtitle-modal {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+        .ios-step {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 18px;
+            align-items: flex-start;
+        }
+        .ios-step-num {
+            background: #3b82f6;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .ios-step-text {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .ios-step-text b { color: #fff; }
+        .ios-step-text .ios-icon {
+            display: inline-flex;
+            width: 22px;
+            height: 22px;
+            background: #1e40af;
+            border-radius: 5px;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin: 0 3px;
+            font-size: 0.9rem;
+        }
+        .ios-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.6rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .ios-modal-close:hover { color: #fff; }
+        .ios-modal-done {
+            width: 100%;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
         /* Responsivo - Tablet */
         @media (max-width: 768px) {
             body { padding: 24px 12px; }
@@ -1243,6 +1342,39 @@
         <button class="ib-close" id="ibClose" title="Fechar">×</button>
     </div>
 
+    <!-- Modal tutorial iOS -->
+    <div class="ios-modal" id="iosModal">
+        <div class="ios-modal-content">
+            <button class="ios-modal-close" id="iosModalClose">×</button>
+            <h2>🍎 Instalar no iPhone/iPad</h2>
+            <p class="subtitle-modal">Siga os 3 passos abaixo no Safari:</p>
+
+            <div class="ios-step">
+                <div class="ios-step-num">1</div>
+                <div class="ios-step-text">
+                    Toque no botão <b>Compartilhar</b> <span class="ios-icon">⬆️</span>
+                    <br><small style="color:#94a3b8;">(na barra de baixo do Safari)</small>
+                </div>
+            </div>
+
+            <div class="ios-step">
+                <div class="ios-step-num">2</div>
+                <div class="ios-step-text">
+                    Role a lista e toque em <b>"Adicionar à Tela de Início"</b> <span class="ios-icon">➕</span>
+                </div>
+            </div>
+
+            <div class="ios-step">
+                <div class="ios-step-num">3</div>
+                <div class="ios-step-text">
+                    Toque em <b>"Adicionar"</b> no canto superior direito. Pronto! O icone <b>VSData</b> vai aparecer na sua tela inicial.
+                </div>
+            </div>
+
+            <button class="ios-modal-done" id="iosModalDone">Entendi</button>
+        </div>
+    </div>
+
     <script>
         document.getElementById('search').addEventListener('input', function() {
             const term = this.value.toLowerCase();
@@ -1353,15 +1485,27 @@
                 showBanner();
             });
 
-            // iOS - instrucoes manuais (sem prompt nativo)
+            // iOS - banner com botao que abre o modal tutorial
             if (isIOS) {
                 setTimeout(() => {
                     icon.textContent = '🍎';
-                    text.innerHTML = '<strong>Instalar no iPhone/iPad</strong><small>Toque em <b>Compartilhar ⬆️</b> e depois <b>Adicionar à Tela de Início</b></small>';
-                    actionBtn.style.display = 'none';
+                    text.innerHTML = '<strong>Instalar Intranet VSData</strong><small>Disponivel na tela inicial do iPhone</small>';
+                    actionBtn.textContent = 'Ver como';
+                    actionBtn.style.display = '';
+                    actionBtn.dataset.ios = '1';
                     showBanner();
                 }, 1500);
             }
+
+            // Modal iOS
+            const iosModal = document.getElementById('iosModal');
+            const iosModalClose = document.getElementById('iosModalClose');
+            const iosModalDone = document.getElementById('iosModalDone');
+            function openIosModal() { iosModal.classList.add('show'); }
+            function closeIosModal() { iosModal.classList.remove('show'); }
+            iosModalClose.addEventListener('click', closeIosModal);
+            iosModalDone.addEventListener('click', closeIosModal);
+            iosModal.addEventListener('click', (e) => { if (e.target === iosModal) closeIosModal(); });
 
             // Android fallback - se o prompt nativo nao disparou em 3s, mostra instrucao manual
             if (isAndroid) {
@@ -1375,8 +1519,12 @@
                 }, 3000);
             }
 
-            // Acao do botao Instalar (Android)
+            // Acao do botao Instalar (Android) ou "Ver como" (iOS)
             actionBtn.addEventListener('click', async () => {
+                if (actionBtn.dataset.ios === '1') {
+                    openIosModal();
+                    return;
+                }
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const choice = await deferredPrompt.userChoice;
