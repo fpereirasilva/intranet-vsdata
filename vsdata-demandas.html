@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSData - Abertura de Demandas</title>
+    <link rel="icon" href="https://www.google.com/s2/favicons?domain=vsdata.com.br&sz=64" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 900px;
+            padding-left: 4px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 36px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: #e2e8f0;
+            transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: #3b82f6;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+        }
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: #fff;
+            overflow: hidden;
+        }
+        .card-icon img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+        .card-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+        .card-info p {
+            font-size: 0.82rem;
+            color: #64748b;
+            word-break: break-all;
+        }
+        .badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .badge.principal { background: #3b82f6; color: #fff; }
+        .badge.parceiro { background: #334155; color: #94a3b8; }
+        .badge.equipe { background: #059669; color: #fff; }
+        .search-box {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .search-box input::placeholder { color: #64748b; }
+        .search-box input:focus { border-color: #3b82f6; }
+        .search-box svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+        .card.hidden { display: none; }
+        .no-results {
+            color: #64748b;
+            text-align: center;
+            padding: 24px;
+            display: none;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Equipe */
+        .person-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .person-card:hover {
+            transform: translateY(-3px);
+            border-color: #059669;
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.15);
+        }
+        .person-card.hidden { display: none; }
+        .person-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .person-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .person-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .person-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+        .person-contact a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .person-contact a:hover { color: #3b82f6; }
+        .person-contact a.whatsapp { color: #25d366; }
+        .person-contact a.whatsapp:hover { color: #128c7e; }
+        .person-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tag {
+            background: #334155;
+            color: #94a3b8;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Equipe Comercial - cards compactos */
+        .badge.comercial { background: #d97706; color: #fff; }
+        .commercial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 36px;
+        }
+        .sales-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 12px 14px;
+            transition: transform 0.15s, border-color 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sales-card:hover {
+            transform: translateY(-2px);
+            border-color: #d97706;
+        }
+        .sales-card.hidden { display: none; }
+        .sales-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .sales-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .sales-info .name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .sales-info .region {
+            font-size: 0.72rem;
+            color: #d97706;
+            margin-bottom: 4px;
+        }
+        .sales-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .sales-links a {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+        .sales-links a:hover { color: #3b82f6; }
+        .sales-links a.wa { color: #25d366; }
+        .sales-links a.wa:hover { color: #128c7e; }
+
+        /* Gerentes de Parcerias */
+        .badge.parceria { background: #0ea5e9; color: #fff; }
+        .partner-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        .partner-card:hover {
+            transform: translateY(-2px);
+            border-color: #0ea5e9;
+        }
+        .partner-card.hidden { display: none; }
+        .partner-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #334155;
+        }
+        .partner-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .partner-logo img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+        .partner-brand {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .partner-person {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .partner-person:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .partner-person .pp-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .partner-person .pp-role {
+            font-size: 0.72rem;
+            color: #0ea5e9;
+            margin-bottom: 4px;
+        }
+        .partner-person .pp-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .partner-person .pp-links a {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+        .partner-person .pp-links a:hover { color: #3b82f6; }
+        .partner-person .pp-links a.wa { color: #25d366; }
+        .partner-person .pp-links a.wa:hover { color: #128c7e; }
+
+        /* Botao copiar */
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #475569;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 0 2px;
+            vertical-align: middle;
+            transition: color 0.15s;
+        }
+        .copy-btn:hover { color: #3b82f6; }
+        .copy-btn.copied { color: #22c55e; }
+
+        footer {
+            margin-top: auto;
+            padding-top: 40px;
+            color: #475569;
+            font-size: 0.8rem;
+        }
+
+        /* Responsivo - Tablet */
+        @media (max-width: 768px) {
+            body { padding: 24px 12px; }
+            h1 { font-size: 1.6rem; }
+            .cards {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .section-title {
+                font-size: 0.95rem;
+                letter-spacing: 1px;
+            }
+            .card { padding: 18px 14px; }
+            .person-card { padding: 16px; }
+        }
+
+        /* Responsivo - Celular */
+        @media (max-width: 480px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.4rem; }
+            .subtitle { font-size: 0.85rem; margin-bottom: 24px; }
+            .search-box input {
+                padding: 12px 12px 12px 40px;
+                font-size: 0.9rem;
+            }
+            .card {
+                padding: 14px 12px;
+                gap: 12px;
+            }
+            .card-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .card-icon img {
+                width: 28px;
+                height: 28px;
+            }
+            .card-info h3 { font-size: 0.95rem; }
+            .card-info p { font-size: 0.75rem; }
+            .person-card { padding: 14px; }
+            .person-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .person-name { font-size: 0.95rem; }
+            .person-contact a { font-size: 0.8rem; }
+            .tag { font-size: 0.68rem; padding: 2px 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="https://www.google.com/s2/favicons?domain=vsdata.com.br&sz=128" alt="VSData" style="width:64px; height:64px; margin-bottom:12px; border-radius:12px;">
+    <h1>VSData</h1>
+    <p class="subtitle">Painel de Abertura de Demandas</p>
+
+    <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search" placeholder="Buscar portal, pessoa ou tecnologia..." autocomplete="off">
+    </div>
+
+    <p class="no-results" id="noResults">Nenhum resultado encontrado.</p>
+
+    <!-- Webmail -->
+    <p class="section-title">Webmail <span class="badge principal">E-mail</span></p>
+    <div class="cards">
+        <a class="card" href="https://webmail.vsdata.com.br" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=vsdata.com.br&sz=128" alt="Webmail"></div>
+            <div class="card-info">
+                <h3>Webmail VSData</h3>
+                <p>webmail.vsdata.com.br</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- CRM -->
+    <p class="section-title">CRM <span class="badge principal">Principal</span></p>
+    <div class="cards">
+        <a class="card" href="https://crm.zoho.com/crm/" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zoho.com&sz=128" alt="Zoho"></div>
+            <div class="card-info">
+                <h3>Zoho CRM</h3>
+                <p>crm.zoho.com/crm</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Portais Parceiros -->
+    <p class="section-title">Portais de Parceiros <span class="badge parceiro">Parceiros</span></p>
+    <div class="cards">
+        <a class="card" href="https://propartner.veeam.com/login/" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=veeam.com&sz=128" alt="Veeam"></div>
+            <div class="card-info">
+                <h3>Veeam ProPartner</h3>
+                <p>propartner.veeam.com</p>
+            </div>
+        </a>
+        <a class="card" href="https://partner.suse.com/s/" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=suse.com&sz=128" alt="SUSE"></div>
+            <div class="card-info">
+                <h3>SUSE Partner</h3>
+                <p>partner.suse.com</p>
+            </div>
+        </a>
+        <a class="card" href="https://www.mongodb.com/company/partners/register" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=mongodb.com&sz=128" alt="MongoDB"></div>
+            <div class="card-info">
+                <h3>MongoDB Partners</h3>
+                <p>mongodb.com/company/partners</p>
+            </div>
+        </a>
+        <a class="card" href="https://www.ibm.com/br-pt/partnerplus" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ibm.com&sz=128" alt="IBM"></div>
+            <div class="card-info">
+                <h3>IBM Partner Plus</h3>
+                <p>ibm.com/br-pt/partnerplus</p>
+            </div>
+        </a>
+        <a class="card" href="https://www.strategy.com/software/partners" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=strategy.com&sz=128" alt="Strategy"></div>
+            <div class="card-info">
+                <h3>Strategy Partners</h3>
+                <p>strategy.com/software/partners</p>
+            </div>
+        </a>
+        <a class="card" href="https://partnercentral.awspartner.com/partnercentral2/s/login" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128" alt="AWS"></div>
+            <div class="card-info">
+                <h3>AWS Partners</h3>
+                <p>partnercentral.awspartner.com</p>
+            </div>
+        </a>
+        <a class="card" href="https://partnerportal.nutanix.com/#/page/login" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=nutanix.com&sz=128" alt="Nutanix"></div>
+            <div class="card-info">
+                <h3>Nutanix Partner Portal</h3>
+                <p>partnerportal.nutanix.com</p>
+            </div>
+        </a>
+        <a class="card" href="https://www.exagrid.com/reseller-partner-program/" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=exagrid.com&sz=128" alt="ExaGrid"></div>
+            <div class="card-info">
+                <h3>ExaGrid Partners</h3>
+                <p>exagrid.com/reseller-partner-program</p>
+            </div>
+        </a>
+        <a class="card" href="https://partners.oracle.com/" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=oracle.com&sz=128" alt="Oracle"></div>
+            <div class="card-info">
+                <h3>Oracle Partner</h3>
+                <p>partners.oracle.com</p>
+            </div>
+        </a>
+        <a class="card" href="https://vsdata.com.br" target="_blank" rel="noopener">
+            <div class="card-icon"><img src="https://www.google.com/s2/favicons?domain=vsdata.com.br&sz=128" alt="VSData"></div>
+            <div class="card-info">
+                <h3>VSData</h3>
+                <p>vsdata.com.br</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Partner Admins VSData -->
+    <p class="section-title">Partner Admins VSData <span class="badge" style="background:#16a34a;color:#fff;">Administradores</span></p>
+    <div class="commercial-grid" id="adminCards">
+
+        <div class="sales-card" data-search="julio costa santos partner admin vsdata">
+            <div class="sales-avatar" style="background:#16a34a;">JS</div>
+            <div class="sales-info">
+                <div class="name">Julio Costa Santos</div>
+                <div class="region" style="color:#16a34a;">Partner Admin</div>
+                <div class="sales-links">
+                    <a href="mailto:julio@vsdata.com.br">&#9993; julio@vsdata.com.br</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="ana maria zavala bazzi compras partner admin vsdata">
+            <div class="sales-avatar" style="background:#0891b2;">AB</div>
+            <div class="sales-info">
+                <div class="name">Ana Maria Zavala Bazzi</div>
+                <div class="region" style="color:#16a34a;">Partner Admin - Compras</div>
+                <div class="sales-links">
+                    <a href="mailto:compras@vsdata.com.br">&#9993; compras@vsdata.com.br</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="leticya hilario partner admin vsdata">
+            <div class="sales-avatar" style="background:#be185d;">LH</div>
+            <div class="sales-info">
+                <div class="name">Leticya Hilario</div>
+                <div class="region" style="color:#16a34a;">Partner Admin</div>
+                <div class="sales-links">
+                    <a href="mailto:leticya.hilario@vsdata.com.br">&#9993; leticya.hilario@vsdata.com.br</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="carlos eduardo vianna santos partner admin vsdata">
+            <div class="sales-avatar" style="background:#7c3aed;">CS</div>
+            <div class="sales-info">
+                <div class="name">Carlos Eduardo Vianna Santos</div>
+                <div class="region" style="color:#16a34a;">Partner Admin</div>
+                <div class="sales-links">
+                    <a href="mailto:carlos@vsdata.com.br">&#9993; carlos@vsdata.com.br</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Gerentes de Parcerias -->
+    <p class="section-title">Gerentes de Parcerias <span class="badge parceria">Fabricantes</span></p>
+    <div class="cards" id="partnerCards">
+
+        <div class="partner-card" data-search="ibm mayara lopes faccioli parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=ibm.com&sz=128" alt="IBM"></div>
+                <div class="partner-brand">IBM</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Mayara Lopes Faccioli</div>
+                <div class="pp-role">Contato principal IBM → VS</div>
+                <div class="pp-links">
+                    <a href="tel:+5511944011658">&#128222; (11) 94401-1658</a>
+                    <a class="wa" href="https://wa.me/5511944011658" target="_blank">&#128172;</a>
+                    <a href="mailto:mayfaccioli@ibm.com">&#9993; mayfaccioli@ibm.com</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="mongodb mongo vivian santana parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=mongodb.com&sz=128" alt="MongoDB"></div>
+                <div class="partner-brand">MongoDB</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Vivian Santana</div>
+                <div class="pp-role">Principal Partner Specialist - Account Brasil</div>
+                <div class="pp-links">
+                    <a href="tel:+5511988258455">&#128222; (11) 98825-8455</a>
+                    <a class="wa" href="https://wa.me/5511988258455" target="_blank">&#128172;</a>
+                    <a href="mailto:wivian.santanaschwab@mongodb.com">&#9993; wivian.santanaschwab@mongodb.com</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="strategy sandro oliveira balbuena coutinho parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=strategy.com&sz=128" alt="Strategy"></div>
+                <div class="partner-brand">Strategy</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Sandro Oliveira Balbuena</div>
+                <div class="pp-role">Country Sales Leader Brasil</div>
+                <div class="pp-links">
+                    <a href="tel:+5561996369995">&#128222; (61) 99636-9995</a>
+                    <a class="wa" href="https://wa.me/5561996369995" target="_blank">&#128172;</a>
+                    <a href="mailto:sbalbuena@strategy.com">&#9993; sbalbuena@strategy.com</a>
+                </div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Coutinho</div>
+                <div class="pp-role">VS Data - BDM</div>
+                <div class="pp-links"></div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="wso2 leticia gimenes parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=wso2.com&sz=128" alt="WSO2"></div>
+                <div class="partner-brand">WSO2</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Leticia Gimenes</div>
+                <div class="pp-role">Head Alliances & Channels LATAM</div>
+                <div class="pp-links">
+                    <a href="tel:+5511971350449">&#128222; (11) 97135-0449</a>
+                    <a class="wa" href="https://wa.me/5511971350449" target="_blank">&#128172;</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="oracle mirian simplicio parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=oracle.com&sz=128" alt="Oracle"></div>
+                <div class="partner-brand">Oracle</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Mirian Simplicio</div>
+                <div class="pp-role">Partner Account Manager - All Tech</div>
+                <div class="pp-links">
+                    <a href="tel:+5511964105929">&#128222; (11) 96410-5929</a>
+                    <a class="wa" href="https://wa.me/5511964105929" target="_blank">&#128172;</a>
+                    <a href="mailto:mirian.simplicio@oracle.com">&#9993; mirian.simplicio@oracle.com</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="aws amazon gezica caetano gustavo rattay ingram micro parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=aws.amazon.com&sz=128" alt="AWS"></div>
+                <div class="partner-brand">AWS</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Gezica Caetano</div>
+                <div class="pp-role">Business Development Manager AWS - Cloud Solutions</div>
+                <div class="pp-links">
+                    <a href="tel:+5511981205363">&#128222; (11) 98120-5363</a>
+                    <a class="wa" href="https://wa.me/5511975797896" target="_blank">&#128172;</a>
+                    <a href="mailto:gezica.caetano@ingrammicro.com">&#9993; gezica.caetano@ingrammicro.com</a>
+                </div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Gustavo Rattay</div>
+                <div class="pp-role">Especialista AWS</div>
+                <div class="pp-links">
+                    <a href="tel:+5551984518571">&#128222; (51) 98451-8571</a>
+                    <a class="wa" href="https://wa.me/5551984518571" target="_blank">&#128172;</a>
+                    <a href="mailto:grattay@amazon.com">&#9993; grattay@amazon.com</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="ingram micro suse caroline navega parceiro fabricante distribuidor">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=ingrammicro.com&sz=128" alt="Ingram Micro"></div>
+                <div class="partner-brand">Ingram Micro <span style="font-size:0.75rem;color:#94a3b8;font-weight:400;">(SUSE)</span></div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Caroline Navega</div>
+                <div class="pp-role">Responsavel SUSE</div>
+                <div class="pp-links">
+                    <a href="tel:+5511996424508">&#128222; (11) 99642-4508</a>
+                    <a class="wa" href="https://wa.me/5511996424508" target="_blank">&#128172;</a>
+                    <a href="mailto:Caroline.Navega@ingrammicro.com">&#9993; Caroline.Navega@ingrammicro.com</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-card" data-search="commvault fabio harder pablo df parceiro fabricante">
+            <div class="partner-header">
+                <div class="partner-logo"><img src="https://www.google.com/s2/favicons?domain=commvault.com&sz=128" alt="Commvault"></div>
+                <div class="partner-brand">Commvault</div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Fabio Harder</div>
+                <div class="pp-role">Commvault</div>
+                <div class="pp-links">
+                    <a href="tel:+5511945022121">&#128222; (11) 94502-2121</a>
+                    <a class="wa" href="https://wa.me/5511945022121" target="_blank">&#128172;</a>
+                </div>
+            </div>
+            <div class="partner-person">
+                <div class="pp-name">Pablo</div>
+                <div class="pp-role">Commvault DF</div>
+                <div class="pp-links">
+                    <a href="tel:+556195769576">&#128222; (61) 9576-9576</a>
+                    <a class="wa" href="https://wa.me/556195769576" target="_blank">&#128172;</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Arquitetos Pre-Sales -->
+    <p class="section-title">Arquitetos Pre-Sales <span class="badge equipe">Contatos</span></p>
+    <div class="commercial-grid" id="teamCards">
+
+        <div class="sales-card" data-search="felippe cardelino coordenador">
+            <div class="sales-avatar" style="background:#1d4ed8;">FC</div>
+            <div class="sales-info">
+                <div class="name">Felippe Cardelino</div>
+                <div class="region" style="color:#059669;">Coordenador</div>
+                <div class="sales-links">
+                    <a href="tel:+5561981754369">&#128222; (61) 98175-4369</a>
+                    <a class="wa" href="https://wa.me/5561981754369" target="_blank">&#128172;</a>
+                    <a href="mailto:felippe.cardelino@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="alexssandro ramos aws ibm instana servicos servidores">
+            <div class="sales-avatar" style="background:#7c3aed;">AR</div>
+            <div class="sales-info">
+                <div class="name">Alexssandro Ramos</div>
+                <div class="region" style="color:#059669;">AWS | IBM Instana | Servidores</div>
+                <div class="sales-links">
+                    <a href="tel:+5521969211975">&#128222; (21) 96921-1975</a>
+                    <a class="wa" href="https://wa.me/5521969211975" target="_blank">&#128172;</a>
+                    <a href="mailto:alexssandro.ramos@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="ricardo longo dynatrace ibm aiops apptio concert instana sevone turbonomic">
+            <div class="sales-avatar" style="background:#dc2626;">RL</div>
+            <div class="sales-info">
+                <div class="name">Ricardo Longo</div>
+                <div class="region" style="color:#059669;">Dynatrace | IBM AIOps | Apptio | Concert | Instana | SevOne | Turbonomic</div>
+                <div class="sales-links">
+                    <a href="tel:+5521998319114">&#128222; (21) 99831-9114</a>
+                    <a class="wa" href="https://wa.me/5521998319114" target="_blank">&#128172;</a>
+                    <a href="mailto:ricardo.longo@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="angelo braga bmc control m geyser ibm flash system fusion power tape licencas linux one">
+            <div class="sales-avatar" style="background:#0891b2;">AB</div>
+            <div class="sales-info">
+                <div class="name">Angelo Braga</div>
+                <div class="region" style="color:#059669;">BMC Control M | Geyser | IBM Flash | Fusion | Power | Tape | Linux One</div>
+                <div class="sales-links">
+                    <a href="tel:+5531992233396">&#128222; (31) 99223-3396</a>
+                    <a class="wa" href="https://wa.me/5531992233396" target="_blank">&#128172;</a>
+                    <a href="mailto:angelo.braga@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="ramon moreno cloud oci exagrid nutanix redes servidores veeam privado">
+            <div class="sales-avatar" style="background:#059669;">RM</div>
+            <div class="sales-info">
+                <div class="name">Ramon Moreno</div>
+                <div class="region" style="color:#059669;">Cloud OCI | Exagrid | Nutanix | Redes | Servidores | Veeam</div>
+                <div class="sales-links">
+                    <a href="tel:+5548998303555">&#128222; (48) 99830-3555</a>
+                    <a class="wa" href="https://wa.me/5548998303555" target="_blank">&#128172;</a>
+                    <a href="mailto:ramon.moreno@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="caio nogueira bi big data dlake ibm cloud pak watson data">
+            <div class="sales-avatar" style="background:#d97706;">CN</div>
+            <div class="sales-info">
+                <div class="name">Caio Nogueira</div>
+                <div class="region" style="color:#059669;">BI / Big D / DLake | IBM Cloud Pak / Data | Watson Data</div>
+                <div class="sales-links">
+                    <a href="tel:+5561999014718">&#128222; (61) 99901-4718</a>
+                    <a class="wa" href="https://wa.me/5561999014718" target="_blank">&#128172;</a>
+                    <a href="mailto:caio.nogueira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="rafael stanger gigamon dpi ibm guardium verify hashicorp vault linux netskope oracle trend">
+            <div class="sales-avatar" style="background:#9333ea;">RS</div>
+            <div class="sales-info">
+                <div class="name">Rafael Stanger</div>
+                <div class="region" style="color:#059669;">Gigamon | IBM Guardium | Hashicorp Vault | Linux | Netskope | Oracle | Trend</div>
+                <div class="sales-links">
+                    <a href="tel:+5541992475272">&#128222; (41) 99247-5272</a>
+                    <a class="wa" href="https://wa.me/5541992475272" target="_blank">&#128172;</a>
+                    <a href="mailto:rafael.stanger@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="claudemir pinho bmc helix docusign ibm watsonx zendesk">
+            <div class="sales-avatar" style="background:#be185d;">CP</div>
+            <div class="sales-info">
+                <div class="name">Claudemir Pinho</div>
+                <div class="region" style="color:#059669;">BMC Helix | Docusign | IBM WatsonX | Zendesk</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187029">&#128222; (41) 2118-7029</a>
+                    <a class="wa" href="https://wa.me/554121187029" target="_blank">&#128172;</a>
+                    <a href="mailto:claudemir.santos@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="paulo junior bmc izot ibm diamondback linux one storage mainframe tape">
+            <div class="sales-avatar" style="background:#0d9488;">PJ</div>
+            <div class="sales-info">
+                <div class="name">Paulo Junior</div>
+                <div class="region" style="color:#059669;">BMC IZOT | IBM DiamondBack | Linux One | Storage Mainframe</div>
+                <div class="sales-links">
+                    <a href="tel:+5521967181071">&#128222; (21) 96718-1071</a>
+                    <a class="wa" href="https://wa.me/5521967181071" target="_blank">&#128172;</a>
+                    <a href="mailto:paulo.junior@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="fabio pereira cloud exagrid nutanix strategy suse ia rancher virtualization veeam">
+            <div class="sales-avatar" style="background:#2563eb;">FP</div>
+            <div class="sales-info">
+                <div class="name">Fabio Pereira</div>
+                <div class="region" style="color:#059669;">Cloud | Exagrid | Nutanix | Strategy | Suse IA / Rancher | Veeam</div>
+                <div class="sales-links">
+                    <a href="tel:+5511971463676">&#128222; (11) 97146-3676</a>
+                    <a class="wa" href="https://wa.me/5511971463676" target="_blank">&#128172;</a>
+                    <a href="mailto:fabio.pereira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="joao bevilacqua oci oracle fusion ia integration cloud projeto prodesp">
+            <div class="sales-avatar" style="background:#ea580c;">JB</div>
+            <div class="sales-info">
+                <div class="name">Joao Bevilacqua</div>
+                <div class="region" style="color:#059669;">OCI | Oracle Fusion IA | Oracle Integration Cloud | Prodesp</div>
+                <div class="sales-links">
+                    <a href="tel:+5512991282108">&#128222; (12) 99128-2108</a>
+                    <a class="wa" href="https://wa.me/5512991282108" target="_blank">&#128172;</a>
+                    <a href="mailto:joao.bevilacqua@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="gerson cazeloto ibm maximo oracle flex cube primavera projetos integracao redes lan wan sdwan wifi">
+            <div class="sales-avatar" style="background:#4f46e5;">GC</div>
+            <div class="sales-info">
+                <div class="name">Gerson Cazeloto</div>
+                <div class="region" style="color:#059669;">IBM Maximo | Oracle Flex Cube | Primavera | Redes LAN/WAN/SDWAN/WIFI</div>
+                <div class="sales-links">
+                    <a href="tel:+5511999996759">&#128222; (11) 99999-6759</a>
+                    <a class="wa" href="https://wa.me/5511999996759" target="_blank">&#128172;</a>
+                    <a href="mailto:gerson.cazeloto@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Equipe Comercial -->
+    <p class="section-title">Comercial Publico <span class="badge comercial">Vendas</span></p>
+    <div class="commercial-grid" id="salesCards">
+
+        <div class="sales-card" data-search="miguel costa centro-oeste norte">
+            <div class="sales-avatar" style="background:#2563eb;">MC</div>
+            <div class="sales-info">
+                <div class="name">Miguel Costa</div>
+                <div class="region">Centro-Oeste e Norte</div>
+                <div class="sales-links">
+                    <a href="tel:+5561982102557">&#128222; (61) 98210-2557</a>
+                    <a class="wa" href="https://wa.me/5561982102557" target="_blank">&#128172;</a>
+                    <a href="mailto:miguel.costa@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="carlos monteiro df brasilia">
+            <div class="sales-avatar" style="background:#7c3aed;">CM</div>
+            <div class="sales-info">
+                <div class="name">Carlos Monteiro</div>
+                <div class="region">DF</div>
+                <div class="sales-links">
+                    <a href="tel:+5561984422221">&#128222; (61) 98442-2221</a>
+                    <a class="wa" href="https://wa.me/5561984422221" target="_blank">&#128172;</a>
+                    <a href="mailto:carlos.monteiro@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="vicente vieira df brasilia">
+            <div class="sales-avatar" style="background:#059669;">VV</div>
+            <div class="sales-info">
+                <div class="name">Vicente Vieira</div>
+                <div class="region">DF</div>
+                <div class="sales-links">
+                    <a href="tel:+5561992243233">&#128222; (61) 99224-3233</a>
+                    <a class="wa" href="https://wa.me/5561992243233" target="_blank">&#128172;</a>
+                    <a href="mailto:vicente.vieira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="william di paula df brasilia">
+            <div class="sales-avatar" style="background:#dc2626;">WP</div>
+            <div class="sales-info">
+                <div class="name">William di Paula</div>
+                <div class="region">DF</div>
+                <div class="sales-links">
+                    <a href="tel:+5561982008600">&#128222; (61) 98200-8600</a>
+                    <a class="wa" href="https://wa.me/5561982008600" target="_blank">&#128172;</a>
+                    <a href="mailto:william.dipaula@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="ana froes regiao norte manaus">
+            <div class="sales-avatar" style="background:#be185d;">AF</div>
+            <div class="sales-info">
+                <div class="name">Ana Froes</div>
+                <div class="region">Norte</div>
+                <div class="sales-links">
+                    <a href="tel:+5592981965665">&#128222; (92) 98196-5665</a>
+                    <a class="wa" href="https://wa.me/5592981965665" target="_blank">&#128172;</a>
+                    <a href="mailto:ana.froes@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="stephane coltz df go goias">
+            <div class="sales-avatar" style="background:#0891b2;">SC</div>
+            <div class="sales-info">
+                <div class="name">Stephane Coltz</div>
+                <div class="region">DF / GO</div>
+                <div class="sales-links">
+                    <a href="tel:+5561996609090">&#128222; (61) 99660-9090</a>
+                    <a class="wa" href="https://wa.me/5561996609090" target="_blank">&#128172;</a>
+                    <a href="mailto:stephane.coltz@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="leandro batista ap mt ms amapa mato grosso sul">
+            <div class="sales-avatar" style="background:#4f46e5;">LB</div>
+            <div class="sales-info">
+                <div class="name">Leandro Batista</div>
+                <div class="region">AP / MT / MS</div>
+                <div class="sales-links">
+                    <a href="tel:+5592992500770">&#128222; (92) 99250-0770</a>
+                    <a class="wa" href="https://wa.me/5592992500770" target="_blank">&#128172;</a>
+                    <a href="mailto:leandro.batista@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="wagner gil sul sudeste nordeste">
+            <div class="sales-avatar" style="background:#ea580c;">WG</div>
+            <div class="sales-info">
+                <div class="name">Wagner Gil</div>
+                <div class="region">Sul, Sudeste e Nordeste</div>
+                <div class="sales-links">
+                    <a href="tel:+5511913175001">&#128222; (11) 91317-5001</a>
+                    <a class="wa" href="https://wa.me/5511913175001" target="_blank">&#128172;</a>
+                    <a href="mailto:wagner.gil@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="sergio gondim ce rn pb pe ma to ceara nordeste">
+            <div class="sales-avatar" style="background:#9333ea;">SG</div>
+            <div class="sales-info">
+                <div class="name">Sergio Gondim</div>
+                <div class="region">CE / RN / PB / PE / MA / TO</div>
+                <div class="sales-links">
+                    <a href="tel:+5585991042222">&#128222; (85) 99104-2222</a>
+                    <a class="wa" href="https://wa.me/5585991042222" target="_blank">&#128172;</a>
+                    <a href="mailto:sergio.gondim@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="robson moreira ba se al pi bahia sergipe alagoas piaui">
+            <div class="sales-avatar" style="background:#0d9488;">RM</div>
+            <div class="sales-info">
+                <div class="name">Robson Moreira</div>
+                <div class="region">BA / SE / AL / PI</div>
+                <div class="sales-links">
+                    <a href="tel:+5571999929009">&#128222; (71) 99992-9009</a>
+                    <a class="wa" href="https://wa.me/5571999929009" target="_blank">&#128172;</a>
+                    <a href="mailto:robson.moreira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="luiz laender mg minas gerais">
+            <div class="sales-avatar" style="background:#d97706;">LL</div>
+            <div class="sales-info">
+                <div class="name">Luiz Laender</div>
+                <div class="region">MG</div>
+                <div class="sales-links">
+                    <a href="tel:+5531988096890">&#128222; (31) 98809-6890</a>
+                    <a class="wa" href="https://wa.me/5531988096890" target="_blank">&#128172;</a>
+                    <a href="mailto:luiz.laender@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="bruno teixeira rj es rio janeiro espirito santo">
+            <div class="sales-avatar" style="background:#1d4ed8;">BT</div>
+            <div class="sales-info">
+                <div class="name">Bruno Teixeira</div>
+                <div class="region">RJ / ES</div>
+                <div class="sales-links">
+                    <a href="tel:+5521999255282">&#128222; (21) 99925-5282</a>
+                    <a class="wa" href="https://wa.me/5521999255282" target="_blank">&#128172;</a>
+                    <a href="mailto:bruno.teixeira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="cassiano silva sp sao paulo">
+            <div class="sales-avatar" style="background:#7c3aed;">CS</div>
+            <div class="sales-info">
+                <div class="name">Cassiano A. Silva</div>
+                <div class="region">SP</div>
+                <div class="sales-links">
+                    <a href="tel:+5511942736567">&#128222; (11) 94273-6567</a>
+                    <a class="wa" href="https://wa.me/5511942736567" target="_blank">&#128172;</a>
+                    <a href="mailto:cassiano.silva@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="renato regente sp sao paulo">
+            <div class="sales-avatar" style="background:#059669;">RR</div>
+            <div class="sales-info">
+                <div class="name">Renato Regente</div>
+                <div class="region">SP</div>
+                <div class="sales-links">
+                    <a href="tel:+5511999440932">&#128222; (11) 99944-0932</a>
+                    <a class="wa" href="https://wa.me/5511999440932" target="_blank">&#128172;</a>
+                    <a href="mailto:renato.regente@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="rafael oliveira pr sc parana santa catarina">
+            <div class="sales-avatar" style="background:#dc2626;">RO</div>
+            <div class="sales-info">
+                <div class="name">Rafael Oliveira</div>
+                <div class="region">PR / SC</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187027">&#128222; (41) 2118-7027</a>
+                    <a class="wa" href="https://wa.me/5541988040170" target="_blank">&#128172;</a>
+                    <a href="mailto:rafael.oliveira@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="marcia novack rs rio grande sul">
+            <div class="sales-avatar" style="background:#be185d;">MN</div>
+            <div class="sales-info">
+                <div class="name">Marcia Novack</div>
+                <div class="region">RS</div>
+                <div class="sales-links">
+                    <a href="tel:+5551999675661">&#128222; (51) 99967-5661</a>
+                    <a class="wa" href="https://wa.me/5551999675661" target="_blank">&#128172;</a>
+                    <a href="mailto:marcia.novack@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="richard mafra contas nomeadas">
+            <div class="sales-avatar" style="background:#0891b2;">RM</div>
+            <div class="sales-info">
+                <div class="name">Richard Mafra</div>
+                <div class="region">Contas Nomeadas</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187089">&#128222; (41) 2118-7089</a>
+                    <a class="wa" href="https://wa.me/5541992660366" target="_blank">&#128172;</a>
+                    <a href="mailto:richard.mafra@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="rafael stanger claro">
+            <div class="sales-avatar" style="background:#4f46e5;">RS</div>
+            <div class="sales-info">
+                <div class="name">Rafael Stanger</div>
+                <div class="region">Claro</div>
+                <div class="sales-links">
+                    <a href="tel:+5541992475272">&#128222; (41) 99247-5272</a>
+                    <a class="wa" href="https://wa.me/5541992475272" target="_blank">&#128172;</a>
+                    <a href="mailto:rafael.stanger@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Comercial Privado -->
+    <p class="section-title">Comercial Privado <span class="badge" style="background:#7c3aed;color:#fff;">Vendas</span></p>
+    <div class="commercial-grid" id="privateSalesCards">
+
+        <div class="sales-card" data-search="alecsandro martins construcao energia logistica multindustrias saude varejo privado">
+            <div class="sales-avatar" style="background:#dc2626;">AM</div>
+            <div class="sales-info">
+                <div class="name">Alecsandro Martins</div>
+                <div class="region">Energia | Logistica | Saude | Varejo | Multindust.</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187059">&#128222; (41) 2118-7059</a>
+                    <a class="wa" href="https://wa.me/5541987929174" target="_blank">&#128172;</a>
+                    <a href="mailto:alecsandro.martins@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="lucas lima comunicacao educacao industrias alimenticia manufatura papel celulose mineracao retail utilities privado">
+            <div class="sales-avatar" style="background:#0891b2;">LL</div>
+            <div class="sales-info">
+                <div class="name">Lucas Lima</div>
+                <div class="region">Educacao | Industrias | Mineracao | Retail | Utilities</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187017">&#128222; (41) 2118-7017</a>
+                    <a class="wa" href="https://wa.me/5541998055904" target="_blank">&#128172;</a>
+                    <a href="mailto:lucas.lima@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sales-card" data-search="rose borges agronegocio bancos cooperativas credito seguradoras privado">
+            <div class="sales-avatar" style="background:#be185d;">RB</div>
+            <div class="sales-info">
+                <div class="name">Rose Borges</div>
+                <div class="region">Agronegocio | Bancos | Cooperativas | Seguradoras</div>
+                <div class="sales-links">
+                    <a href="tel:+554121187010">&#128222; (41) 2118-7010</a>
+                    <a class="wa" href="https://wa.me/5541996888388" target="_blank">&#128172;</a>
+                    <a href="mailto:rose.borges@vsdata.com.br">&#9993; E-mail</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>&copy; 2026 VSData - Painel interno</footer>
+
+    <script>
+        document.getElementById('search').addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            const salesCards = document.querySelectorAll('.sales-card');
+            const partnerCards = document.querySelectorAll('.partner-card');
+            const sections = document.querySelectorAll('.section-title');
+            let totalVisible = 0;
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const match = text.includes(term);
+                card.classList.toggle('hidden', !match);
+                if (match) totalVisible++;
+            });
+
+            salesCards.forEach(card => {
+                const text = (card.textContent + ' ' + (card.dataset.search || '')).toLowerCase();
+                const match = text.includes(term);
+                card.classList.toggle('hidden', !match);
+                if (match) totalVisible++;
+            });
+
+            partnerCards.forEach(card => {
+                const text = (card.textContent + ' ' + (card.dataset.search || '')).toLowerCase();
+                const match = text.includes(term);
+                card.classList.toggle('hidden', !match);
+                if (match) totalVisible++;
+            });
+
+            sections.forEach(section => {
+                let grid = section.nextElementSibling;
+                if (grid && (grid.classList.contains('cards') || grid.classList.contains('commercial-grid'))) {
+                    const visibleCards = grid.querySelectorAll('.card:not(.hidden), .sales-card:not(.hidden), .partner-card:not(.hidden)');
+                    section.style.display = visibleCards.length ? '' : 'none';
+                    grid.style.display = visibleCards.length ? '' : 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = totalVisible === 0 ? 'block' : 'none';
+        });
+
+        // Adicionar botoes de copiar em telefones e emails
+        document.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(link => {
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.title = 'Copiar';
+            btn.textContent = '📋';
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                let value = '';
+                if (link.href.startsWith('mailto:')) {
+                    value = link.href.replace('mailto:', '');
+                } else {
+                    value = link.textContent.replace('📞 ', '').replace('📋', '').replace('✅', '').trim();
+                }
+                navigator.clipboard.writeText(value).then(() => {
+                    btn.textContent = '✅';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '📋';
+                        btn.classList.remove('copied');
+                    }, 1500);
+                });
+            });
+            link.after(btn);
+        });
+    </script>
+
+</body>
+</html>
