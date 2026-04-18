@@ -1331,31 +1331,48 @@
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
             const isAndroid = /android/i.test(ua);
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-            const dismissed = localStorage.getItem('pwa-install-dismissed');
 
-            if (isStandalone || dismissed) return;
+            if (isStandalone) return;
 
             let deferredPrompt = null;
+            let promptFired = false;
+
+            function showBanner() {
+                banner.classList.add('show');
+            }
 
             // Android / Chrome Desktop - prompt nativo
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
+                promptFired = true;
                 icon.textContent = isAndroid ? '🤖' : '💻';
                 text.innerHTML = '<strong>Instalar Intranet VSData</strong><small>Acesso rapido direto da tela inicial</small>';
                 actionBtn.textContent = 'Instalar';
                 actionBtn.style.display = '';
-                banner.classList.add('show');
+                showBanner();
             });
 
             // iOS - instrucoes manuais (sem prompt nativo)
-            if (isIOS && !isStandalone) {
+            if (isIOS) {
                 setTimeout(() => {
                     icon.textContent = '🍎';
-                    text.innerHTML = '<strong>Instalar no iPhone/iPad</strong><small>Toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Inicio</b></small>';
+                    text.innerHTML = '<strong>Instalar no iPhone/iPad</strong><small>Toque em <b>Compartilhar ⬆️</b> e depois <b>Adicionar à Tela de Início</b></small>';
                     actionBtn.style.display = 'none';
-                    banner.classList.add('show');
+                    showBanner();
                 }, 1500);
+            }
+
+            // Android fallback - se o prompt nativo nao disparou em 3s, mostra instrucao manual
+            if (isAndroid) {
+                setTimeout(() => {
+                    if (!promptFired && !isStandalone) {
+                        icon.textContent = '🤖';
+                        text.innerHTML = '<strong>Instalar no Android</strong><small>Toque no <b>⋮ menu</b> do Chrome e escolha <b>"Instalar aplicativo"</b> ou <b>"Adicionar à tela inicial"</b></small>';
+                        actionBtn.style.display = 'none';
+                        showBanner();
+                    }
+                }, 3000);
             }
 
             // Acao do botao Instalar (Android)
@@ -1370,16 +1387,14 @@
                 }
             });
 
-            // Fechar banner
+            // Fechar banner (sem salvar, pra reaparecer na proxima visita)
             closeBtn.addEventListener('click', () => {
                 banner.classList.remove('show');
-                localStorage.setItem('pwa-install-dismissed', '1');
             });
 
             // App instalado
             window.addEventListener('appinstalled', () => {
                 banner.classList.remove('show');
-                localStorage.setItem('pwa-install-dismissed', '1');
             });
         })();
     </script>

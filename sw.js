@@ -1,4 +1,4 @@
-const CACHE = 'vsdata-intranet-v1';
+const CACHE = 'vsdata-intranet-v2';
 const ASSETS = [
   '/',
   '/index.html',
